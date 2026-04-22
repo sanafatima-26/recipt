@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - {{ receipt.receipt_number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .receipt-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 800px;
+        }
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .receipt-title {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .institution-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .receipt-number {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .details-table {
+            width: 100%;
+            margin: 20px 0;
+        }
+        .details-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .details-table td:first-child {
+            font-weight: bold;
+            width: 35%;
+            background: #f8f9fa;
+        }
+        .btn-download {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .btn-print {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .btn-back {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .fee-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .receipt-card {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <div class="receipt-title">
+                    <i class="fas fa-receipt"></i> FEE RECEIPT
+                </div>
+                <div class="institution-name mt-2">
+                    FUTURE ENGINEERS COLLEGE
+                </div>
+                <div class="text-muted small">
+                    Approved by AICTE, Affiliated to Technical University<br>
+                    Knowledge Park, Greater Noida, UP - 201310
+                </div>
+            </div>
+            
+            <div class="receipt-number">
+                <strong>Receipt Number:</strong> {{ receipt.receipt_number }}
+            </div>
+            
+            <table class="details-table">
+                <tr>
+                    <td><i class="fas fa-user-graduate"></i> Student Name:</td>
+                    <td>{{ receipt.student_name }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-user-father"></i> Father's Name:</td>
+                    <td>{{ receipt.father_name }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-user-mother"></i> Mother's Name:</td>
+                    <td>{{ receipt.mother_name }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-book"></i> Course:</td>
+                    <td>{{ receipt.course }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-calendar-alt"></i> Semester:</td>
+                    <td>{{ receipt.semester }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-id-card"></i> Roll Number:</td>
+                    <td>{{ receipt.roll_number }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-registered"></i> Registration Number:</td>
+                    <td>{{ receipt.registration_number }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-envelope"></i> Email:</td>
+                    <td>{{ receipt.email }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-phone"></i> Phone:</td>
+                    <td>{{ receipt.phone }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-map-marker-alt"></i> Address:</td>
+                    <td>{{ receipt.address }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-calendar-day"></i> Payment Date:</td>
+                    <td>{{ receipt.payment_date.strftime('%d-%m-%Y') }}</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-credit-card"></i> Payment Mode:</td>
+                    <td>{{ receipt.payment_mode }}</td>
+                </tr>
+                {% if receipt.transaction_id %}
+                <tr>
+                    <td><i class="fas fa-hashtag"></i> Transaction ID:</td>
+                    <td>{{ receipt.transaction_id }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td><i class="fas fa-money-bill-wave"></i> Fee Amount:</td>
+                    <td class="fee-amount">₹ {{ "{:,.2f}".format(receipt.fee_amount) }}</td>
+                </tr>
+            </table>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted small">This is a computer generated receipt. No signature required.</p>
+            </div>
+            
+            <div class="text-center no-print mt-4">
+                <a href="{{ url_for('download_receipt', receipt_id=receipt.id) }}" class="btn btn-download text-white">
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+                <button onclick="window.print()" class="btn btn-print text-white">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+                <a href="/" class="btn btn-back text-white">
+                    <i class="fas fa-plus"></i> New Receipt
+                </a>
+                <a href="{{ url_for('all_receipts') }}" class="btn btn-back text-white">
+                    <i class="fas fa-list"></i> All Receipts
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

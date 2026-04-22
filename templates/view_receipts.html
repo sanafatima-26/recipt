@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Receipts - FE Receipt System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="container">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-receipt"></i> FE Receipt System
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="fas fa-plus"></i> New Receipt
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/all_receipts">
+                                <i class="fas fa-list"></i> All Receipts
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="container-custom">
+            <div class="header">
+                <h1><i class="fas fa-list"></i> All Fee Receipts</h1>
+                <p class="text-muted">View, download, and manage all generated receipts</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Search Box -->
+            <div class="search-box">
+                <form method="GET" action="{{ url_for('search_receipt') }}" class="row g-3">
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" name="q" 
+                                   placeholder="Search by Student Name, Receipt Number, or Roll Number..." 
+                                   value="{{ search_query if search_query else '' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+                {% if search_query %}
+                <div class="mt-2">
+                    <a href="/all_receipts" class="text-muted">
+                        <i class="fas fa-times"></i> Clear Search
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Receipt Count -->
+            <div class="receipt-count">
+                <i class="fas fa-receipt"></i> Total Receipts: {{ receipts|length }}
+            </div>
+            
+            {% if receipts %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-receipts">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> ID</th>
+                            <th><i class="fas fa-barcode"></i> Receipt No.</th>
+                            <th><i class="fas fa-user"></i> Student Name</th>
+                            <th><i class="fas fa-book"></i> Course</th>
+                            <th><i class="fas fa-id-card"></i> Roll Number</th>
+                            <th><i class="fas fa-money-bill"></i> Amount</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
+                            <th><i class="fas fa-cogs"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for receipt in receipts %}
+                        <tr>
+                            <td>{{ receipt.id }}</td>
+                            <td><strong>{{ receipt.receipt_number }}</strong></td>
+                            <td>{{ receipt.student_name }}</td>
+                            <td>{{ receipt.course }}</td>
+                            <td>{{ receipt.roll_number }}</td>
+                            <td class="text-success fw-bold">₹ {{ "{:,.2f}".format(receipt.fee_amount) }}</td>
+                            <td>{{ receipt.payment_date.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('view_receipt', receipt_id=receipt.id) }}" 
+                                   class="btn btn-view btn-sm" title="View Receipt">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{{ url_for('download_receipt', receipt_id=receipt.id) }}" 
+                                   class="btn btn-download btn-sm" title="Download PDF">
+                                    <i class="fas fa-download"></i> PDF
+                                </a>
+                                <a href="{{ url_for('delete_receipt', receipt_id=receipt.id) }}" 
+                                   class="btn btn-delete btn-sm" 
+                                   onclick="return confirm('Are you sure you want to delete receipt {{ receipt.receipt_number }}?')"
+                                   title="Delete Receipt">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="alert alert-info text-center">
+                        <h5><i class="fas fa-chart-line"></i> Total Amount</h5>
+                        <h3>₹ {{ "{:,.2f}".format(receipts|sum(attribute='fee_amount')) }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-success text-center">
+                        <h5><i class="fas fa-users"></i> Total Students</h5>
+                        <h3>{{ receipts|length }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="alert alert-warning text-center">
+                        <h5><i class="fas fa-calendar"></i> Latest Receipt</h5>
+                        <h6>{{ receipts[0].payment_date.strftime('%d-%m-%Y') if receipts else 'N/A' }}</h6>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <!-- No Receipts Found -->
+            <div class="text-center py-5">
+                <i class="fas fa-receipt" style="font-size: 64px; color: #ccc;"></i>
+                <h3 class="mt-3">No Receipts Found</h3>
+                <p class="text-muted">Click the button below to generate your first receipt</p>
+                <a href="/" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> Generate First Receipt
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2024 FE Receipt System | Future Engineers College</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
